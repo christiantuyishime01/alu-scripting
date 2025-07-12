@@ -1,8 +1,7 @@
 #!/usr/bin/python3
 """
-Module for querying Reddit API to get top 10 hot posts from a subreddit.
+Module that queries Reddit API for top 10 hot posts in a subreddit.
 """
-
 import requests
 
 
@@ -16,59 +15,39 @@ def top_ten(subreddit):
                                         
     Returns:
     None: Prints the titles or None if invalid subreddit
-    """
+                                                        """
     if not subreddit or not isinstance(subreddit, str):
-        print("None")
+        print(None)
         return
-                                                                                    
-    # Reddit API endpoint for hot posts
+                                                                                
     url = f"https://www.reddit.com/r/{subreddit}/hot.json"
-                                                                                                
-    # Custom User-Agent to avoid rate limiting
     headers = {
-            'User-Agent': 'linux:0x16.api.advanced:v1.0.0 (by /u/bdov_)'
+            'User-Agent': 'python:reddit.api.project:v1.0 (by /u/your_username)'
             }
-                                                                                                                        
-    # Parameters to limit results and avoid redirects
-    params = {
-            'limit': 10
-            }
-                                                                                                                                                
     try:
-        # Make request without following redirects
-        response = requests.get(url, headers=headers, params=params,
-            allow_redirects=False)
-
-        # Check if we got a redirect (invalid subreddit)
+        response = requests.get(url, headers=headers, allow_redirects=False)
+                                                                                                                        
+        # Check if we got redirected (invalid subreddit)
         if response.status_code == 302:
-            print("None")
+            print(None)
             return
-        
+                                                                                                                                                                            
         # Check if request was successful
         if response.status_code != 200:
-            print("None")
+            print(None)                                                                                                                                                                                     return
+                                                                                                                                                                                                        data = response.json()
+        
+        # Check if we have valid data structure
+        if 'data' not in data or 'children' not in data['data']:
+            print(None)
             return
-        
-        # Parse JSON response
-        data = response.json()
-                                                                                                                                                                                                        # Check if we have the expected structure
-                                                                                                                                                                                                        if 'data' not in data or 'children' not in data['data']:
-                                                                                                                                                                                                            print("None")
-                                                                                                                                                                                                            return
-        
-        # Extract and print post title
+
         posts = data['data']['children']
         
-        # If no posts found, subreddit might be invalid
-        
-        if not posts:
-            print("None")
-            return
-        
         # Print titles of first 10 posts
-        for post in posts[:10]:
-            if 'data' in post and 'title' in post['data']:
-                print(post['data']['title'])
+    for i, post in enumerate(posts[:10]):
+        if 'data' in post and 'title' in post['data']:
+            print(post['data']['title'])
 
-    except (requests.RequestException, ValueError, KeyError:
-            print("None")
+    except (requests.exceptions.RequestException, ValueError, KeyError):
+        print(None)
