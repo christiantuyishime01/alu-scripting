@@ -1,26 +1,38 @@
 #!/usr/bin/python3
-"""
-This module defines a function to print the titles of
-the top 10 hot posts from a given subreddit.
-"""
+"""Script that fetch all hot post for a given subreddit with recursive call."""
 
 import requests
 
+headers = {'User-Agent': 'MyAPI/0.0.1'}
 
-def top_ten(subreddit):
-        """
-        Prints the titles of the first 10 hot posts for a given subreddit.
-        If the subreddit is invalid, prints None.
-        """
-        url = "https://www.reddit.com/r/{}/hot.json?limit=10".format(subreddit)
-        headers = {'User-Agent': 'CustomUserAgent/1.0'}
 
-        response = requests.get(url, headers=headers, allow_redirects=False)
+def recurse(subreddit, after="", hot_list=[], page_counter=0):
+    """Return all hot posts in a subreddit."""
 
-        if response.status_code != 200:
-            print(None)
-            return
+    subreddit_url = "https://reddit.com/r/{}/hot.json".format(subreddit)
 
-        posts = response.json().get("data", {}).get("children", [])
-        for post in posts:
-            print(post.get("data", {}).get("title"))                                                        
+    parameters = {'limit': 100, 'after': after}
+    response = requests.get(subreddit_url, headers=headers, params=parameters)
+
+    if response.status_code == 200:
+        json_data = response.json()
+            
+
+    for child in json_data.get('data').get('children'):
+        title = child.get('data').get('title')
+        hot_list.append(title)
+
+                                                                
+    after = json_data.get('data').get('after')
+    if after is not None:
+        page_counter += 1
+        return recurse(subreddit, after=after,
+                hot_list=hot_list, page_counter=page_counter)
+    else:
+        return hot_list
+
+    else:
+        return None
+
+if __name__ == '__main__':
+    print(recurse("zerowastecz"))
