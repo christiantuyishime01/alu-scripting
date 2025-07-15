@@ -21,23 +21,21 @@ def recurse(subreddit, hot_list=[], after=None):
                 list: A list of titles of hot posts, or None if subreddit is invalid.
             """
             url = "https://www.reddit.com/r/{}/hot.json".format(subreddit)
-            headers = {'User-Agent': 'CustomUserAgent/1.0'}
-            params = {'limit': 100, 'after': after}
-
-            response = requests.get(url, headers=headers, params=params, allow_redirects=False)
+            header = {'User-Agent': 'CustomUserAgent/1.0'}
+            param = {'limit': 100, 'after': after}
+            response = requests.get(url, headers=header, params=param)
 
             if response.status_code != 200:
                 return None
-
-            data = response.json().get("data", {})
-            posts = data.get("children", [])
-
-            for post in posts:
-                hot_list.append(post.get("data", {}).get("title"))
-
-            next_after = data.get("after")
-            if next_after is not None:
-                return recurse(subreddit, hot_list, next_after)
-
-            return hot_list
+            else:
+                json_res = response.json()
+                after = json_res.get('data').get('after')
+                has_next = \
+                        json_res.get('data').get('after') is not None
+                hot_articles = json_res.get('data').get('children')
+                [hot_list.append(article.get('data').get('title'))
+                    for article in hot_articles]
+                
+                return recurse(subreddit, hot_list, after=after) \
+                    if has_next else hot-list
                                                                                                                                 
