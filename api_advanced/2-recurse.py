@@ -1,41 +1,28 @@
 #!/usr/bin/python3
 """
-This module defines a recursive function that queries the Reddit API
-and returns a list of titles of all hot articles for a given subreddit.
+Writing a recursive function that queries the Reddit API and returns a list containing the titles of all hot articles for a given subreddit.
+If no results are found for the given subreddit, the function returns None.
 """
-
 import requests
 
 
 def recurse(subreddit, hot_list=[], after=None):
-        """
-            Recursively queries the Reddit API and returns a list containing 
-            the titles of all hot articles for a given subreddit.
-
-            Args:
-                subreddit (str): The name of the subreddit.
-                hot_list (list): Accumulator for hot post titles.
-                after (str): Token for next page of results (for pagination).
-
-            Returns:
-                list: A list of titles of hot posts, or None if subreddit is invalid.
-            """
-            url = "https://www.reddit.com/r/{}/hot.json".format(subreddit)
-            header = {'User-Agent': 'CustomUserAgent/1.0'}
-            param = {'limit': 100, 'after': after}
-            response = requests.get(url, headers=header, params=param)
-
-            if response.status_code != 200:
-                return None
-            else:
-                json_res = response.json()
-                after = json_res.get('data').get('after')
-                has_next = \
-                        json_res.get('data').get('after') is not None
-                hot_articles = json_res.get('data').get('children')
-                [hot_list.append(article.get('data').get('title'))
-                    for article in hot_articles]
-                
-                return recurse(subreddit, hot_list, after=after) \
-                    if has_next else hot-list
-                                                                                                                                
+    """ function that queries the Reddit API and returns a list containing
+        the titles of all hot articles for a given subreddit. If no results
+        are found for the given subreddit, the function should return None.
+    """
+    headers = {'User-agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_0)\
+                AppleWebKit/537.36 (KHTML, like Gecko) Chrome/76.0.3809.100\
+                Safari/537.36'}
+    params = {'limit': 100, 'after': after}
+    url = 'https://www.reddit.com/r/{}/hot.json'.format(subreddit)
+    res = requests.get(url, headers=headers, params=params)
+    if res.status_code == 404:
+        return None
+    children = res.json().get('data').get('children')
+    for child in children:
+        hot_list.append(child.get('data').get('title'))
+        after = res.json().get('data').get('after')
+        if after is None:
+            return hot_list
+        return recurse(subreddit, hot_list, after)
